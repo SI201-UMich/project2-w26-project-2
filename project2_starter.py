@@ -41,7 +41,17 @@ def load_listing_results(html_path) -> list[tuple]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    with open(html_path, "r", encoding="utf-8-sig") as f:
+        soup = BeautifulSoup(f, "html.parser")
+
+    results = []
+    title_divs = soup.find_all("div", {"data-testid": "listing-card-title"})
+    for div in title_divs:
+        div_id = div.get("id", "")
+        listing_id = div_id.replace("title_", "")
+        listing_title = div.get_text(strip=True)
+        results.append((listing_title, listing_id))
+    return results
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
