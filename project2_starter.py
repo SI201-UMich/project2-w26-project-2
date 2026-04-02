@@ -167,7 +167,22 @@ def create_listing_database(html_path) -> list[tuple]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    listings = load_listing_results(html_path)
+    database = []
+    for listing_title, listing_id in listings:
+        details_dict = get_listing_details(listing_id)
+        details = details_dict[listing_id]
+        row = (
+            listing_title,
+            listing_id,
+            details["policy_number"],
+            details["host_type"],
+            details["host_name"],
+            details["room_type"],
+            details["location_rating"],
+        )
+        database.append(row)
+    return database
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -312,7 +327,8 @@ class TestCases(unittest.TestCase):
 
 
 def main():
-    detailed_data = create_listing_database(os.path.join("html_files", "search_results.html"))
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    detailed_data = create_listing_database(os.path.join(base_dir, "html_files", "search_results.html"))
     output_csv(detailed_data, "airbnb_dataset.csv")
 
 
