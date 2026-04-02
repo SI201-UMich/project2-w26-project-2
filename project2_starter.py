@@ -80,7 +80,73 @@ def get_listing_details(listing_id) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    html_path = os.path.join(base_dir, "html_files", f"listing_{listing_id}.html")
+
+    with open(html_path, "r", encoding="utf-8-sig") as f:
+        soup = BeautifulSoup(f,"html.parser")
+
+    text = soup.get_text()
+
+    # policy_number:
+    policy_match = re.search(r"Policy number[:\s]*(.{1,60}?)(?:\n|\r|Language|Response)", text)
+    if policy_match:
+        raw_policy = policy_match.group(1).strip()
+        raw_policy = raw_policy.replace("\ufeff", "").strip()
+        if re.search(r"pending", raw_policy, re.IGNORECASE):
+            policy_number = "Pending"
+        elif re.search(r"exempt", raw_policy, re.IGNORECASE):
+            policy_number = "Exempt"
+        else:
+            clean = re.match(r"([\w\-]+)", raw_policy)
+            policy_number = clean.group(1) if clean else raw_policy
+    else:
+        policy_number = "Pending"
+
+    # host_type:
+    if re.search(r"Superhost", text):
+        host_type = "Superhost"
+    else:
+        host_type = "regular"
+
+    # host_name:
+    host_match = re.search(r"Hosted by[:\s]*(.{1,60}?)(?:Joined|$)", text)
+    if host_match:
+        host_name = host_match.group(1).strip()
+    else:
+        host_name = ""
+
+    # room_type:
+    room_match = re.search(r"(Entire|Private|Shared)\s+\w+\s+hosted by", text, re.IGNORECASE)
+    if room_match:
+        keyword = room_match.group(1).capitalize()
+        if keyword == "Private":
+            room_type = "Private Room"
+        elif keyword == "Shared":
+            room_type = "Shared Room"
+        else:
+            room_type = "Entire Room"
+    else:
+        room_type = "Entire Room"
+
+    # location_rating:
+    rating_match = re.search(
+        r"Cleanliness[\s\S]{0,300}?Location(\d\.\d)", text
+    )
+    if rating_match:
+        location_rating = float(rating_match.group(1))
+    else:
+        location_rating = 0.0
+    
+    return {
+        listing_id: {
+            "policy_number": policy_number,
+            "host_type": host_type,
+            "host_name": host_name,
+            "room_type": room_type,
+            "location_rating": location_rating,
+        }
+    }
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
