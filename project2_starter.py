@@ -41,7 +41,11 @@ def load_listing_results(html_path) -> list[tuple]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    with open(html_path, "r", encoding="utf-8-sig") as f:
+    import os
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    full_path = os.path.join(base_dir, html_path)
+    
+    with open(full_path, "r", encoding="utf-8-sig") as f:
         soup = BeautifulSoup(f, "html.parser")
 
     results = []
@@ -86,7 +90,8 @@ def get_listing_details(listing_id) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    path = os.path.join("html_files", f"listing_{listing_id}.html")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base_dir, "html_files", f"listing_{listing_id}.html")
 
     if not os.path.exists(path):
         return {
@@ -172,7 +177,23 @@ def create_listing_database(html_path) -> list[tuple]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    basic_data = load_listing_results(html_path)
+    full_data = []
+
+    for title, listing_id in basic_data:
+        details = get_listing_details(listing_id)[listing_id]
+
+        full_data.append((
+            title,
+            listing_id,
+            details["policy_number"],
+            details["host_type"],
+            details["host_name"],
+            details["room_type"],
+            details["location_rating"]
+        ))
+    
+    return full_data
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
