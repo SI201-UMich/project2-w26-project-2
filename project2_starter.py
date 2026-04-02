@@ -307,7 +307,22 @@ def google_scholar_searcher(query):
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    url = f"https://scholar.google.com/scholar?q={query.replace(' ', '+')}"
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/91.0.4472.124 Safari/537.36"
+        )
+    }
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.text, "html.parser")
+    titles = []
+    for tag in soup.find_all("h3", class_="gs_rt"):
+        for label in tag.find_all("span"):
+            label.decompose()
+        titles.append(tag.get_text(strip=True))
+    return titles
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
