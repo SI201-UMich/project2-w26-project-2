@@ -41,27 +41,7 @@ def load_listing_results(html_path) -> list[tuple]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    import os
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    full_path = os.path.join(base_dir, html_path)
-    
-    with open(full_path, "r", encoding="utf-8-sig") as f:
-        soup = BeautifulSoup(f, "html.parser")
-
-    results = []
-
-    listings = soup.find_all("a", href=re.compile(r"/rooms/\d+"))
-
-    for listing in listings:
-        href = listing.get("href", "")
-        title = listing.get_text(strip=True)
-
-        match = re.search(r"/rooms/(\d+)", href)
-        if match and title:
-            listing_id = match.group(1)
-            results.append((title, listing_id))
-
-    return results
+    pass
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -90,73 +70,7 @@ def get_listing_details(listing_id) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(base_dir, "html_files", f"listing_{listing_id}.html")
-
-    if not os.path.exists(path):
-        return {
-            listing_id: {
-                "policy_number": "Missing",
-                "host_type": "unknown",
-                "host_name": "",
-                "room_type": "",
-                "location_rating": 0.0
-            }
-        }
-    
-    with open(path, "r", encoding="utf-8-sig") as f:
-        soup = BeautifulSoup(f, "html.parser")
-
-    text = soup.get_text()
-
-    policy_number = "Pending"
-
-    if "Exempt" in text:
-        policy_number = "Exempt"
-    else:
-        match = re.search(r"(STR-\d+|20\d{2}-00\d{4}STR)", text)
-        if match:
-            policy_number = match.group(1)
-        elif "pending" in text.lower():
-            policy_number = "Pending"
-
-    host_type = "Superhost" if "Superhost" in text else "regular"
-
-    host_name = ""
-    host_section = soup.find(string=re.compile("Hosted by"))
-    if host_section:
-        host_name = host_section.replace("Hosted by", "").strip()
-
-    subtitle = ""
-    h2 = soup.find("h2")
-    if h2:
-        subtitle = h2.get_text().lower()
-
-    if "private" in subtitle:
-        room_type = "Private Room"
-    elif "shared" in subtitle:
-        room_type = "Shared Room"
-    else:
-        room_type = "Entire Room"
-
-    location_rating = 0.0
-
-    for r in soup.find_all(string=re.compile("Location")):
-        parent_text = r.parent.get_text(" ", strip=True)
-        match = re.search(r"(\d\.\d)", parent_text)
-        if match:
-            location_rating = float(match.group(1))
-            break
-
-    return {
-        listing_id: {
-            "policy_number": policy_number,
-            "host_type": host_type,
-            "host_name": host_name,
-            "room_type": room_type,
-            "location_rating": location_rating
-        }
-    }
+    pass
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -177,23 +91,7 @@ def create_listing_database(html_path) -> list[tuple]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    basic_data = load_listing_results(html_path)
-    full_data = []
-
-    for title, listing_id in basic_data:
-        details = get_listing_details(listing_id)[listing_id]
-
-        full_data.append((
-            title,
-            listing_id,
-            details["policy_number"],
-            details["host_type"],
-            details["host_name"],
-            details["room_type"],
-            details["location_rating"]
-        ))
-    
-    return full_data
+    pass
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -216,23 +114,7 @@ def output_csv(data, filename) -> None:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    sorted_data = sorted(data, key=lambda x: x[-1], reverse=True)
-
-    with open(filename, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.writer(f)
-
-        writer.writerow([
-            "Listing Title",
-            "Listing ID",
-            "Policy Number",
-            "Host Type",
-            "Host Name",
-            "Room Type",
-            "Location Rating"
-        ])
-
-        for row in sorted_data:
-            writer.writerow(row)
+    pass
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -255,24 +137,7 @@ def avg_location_rating_by_room_type(data) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    totals = {}
-    counts = {}
-
-    for row in data:
-        room_type = row[5]
-        rating = row[6]
-
-        if rating == 0.0:
-            continue
-
-        totals[room_type] = totals.get(room_type, 0) + rating
-        counts[room_type] = counts.get(room_type, 0) + 1
-
-    averages = {}
-    for room in totals:
-        averages[room] = totals[room] / counts[room]
-
-    return averages
+    pass
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -293,22 +158,7 @@ def validate_policy_numbers(data) -> list[str]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    invalid = []
-
-    pattern1 = r"20\d{2}-00\d{4}STR"
-    pattern2 = r"STR-\d{7}"
-
-    for row in data:
-        listing_id = row[1]
-        policy = row[2]
-
-        if policy in ["Pending", "Exempt"]:
-            continue
-
-        if not (re.fullmatch(pattern1, policy) or re.fullmatch(pattern2, policy)):
-            invalid.append(listing_id)
-
-    return invalid
+    pass
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -371,7 +221,7 @@ class TestCases(unittest.TestCase):
         # TODO: Call output_csv() to write the detailed_data to a CSV file.
         # TODO: Read the CSV back in and store rows in a list.
         # TODO: Check that the first data row matches ["Guesthouse in San Francisco", "49591060", "STR-0000253", "Superhost", "Ingrid", "Entire Room", "5.0"].
-
+        
         os.remove(out_path)
 
     def test_avg_location_rating_by_room_type(self):
