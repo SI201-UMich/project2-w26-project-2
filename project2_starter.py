@@ -86,7 +86,72 @@ def get_listing_details(listing_id) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    path = os.path.join("html_files", f"listing_{listing_id}.html")
+
+    if not os.path.exists(path):
+        return {
+            listing_id: {
+                "policy_number": "Missing",
+                "host_type": "unknown",
+                "host_name": "",
+                "room_type": "",
+                "location_rating": 0.0
+            }
+        }
+    
+    with open(path, "r", encoding="utf-8-sig") as f:
+        soup = BeautifulSoup(f, "html.parser")
+
+    text = soup.get_text()
+
+    policy_number = "Pending"
+
+    if "Exempt" in text:
+        policy_number = "Exempt"
+    else:
+        match = re.search(r"(STR-\d+|20\d{2}-00\d{4}STR)", text)
+        if match:
+            policy_number = match.group(1)
+        elif "pending" in text.lower():
+            policy_number = "Pending"
+
+    host_type = "Superhost" if "Superhost" in text else "regular"
+
+    host_name = ""
+    host_section = soup.find(string=re.compile("Hosted by"))
+    if host_section:
+        host_name = host_section.replace("Hosted by", "").strip()
+
+    subtitle = ""
+    h2 = soup.find("h2")
+    if h2:
+        subtitle = h2.get_text().lower()
+
+    if "private" in subtitle:
+        room_type = "Private Room"
+    elif "shared" in subtitle:
+        room_type = "Shared Room"
+    else:
+        room_type = "Entire Room"
+
+    location_rating = 0.0
+
+    for r in soup.find_all(string=re.compile("Location")):
+        parent_text = r.parent.get_text(" ", strip=True)
+        match = re.search(r"(\d\.\d)", parent_text)
+        if match:
+            location_rating = float(match.group(1))
+            break
+
+    return {
+        listing_id: {
+            "policy_number": policy_number,
+            "host_type": host_type,
+            "host_name": host_name,
+            "room_type": room_type,
+            "location_rating": location_rating
+        }
+    }
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
